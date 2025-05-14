@@ -123,20 +123,29 @@ class Graph {
 
     //Bread-first search
     bfs(startValue, targetValue) {
-        const visited = new Set(); //Set untuk melacak simpul yang telah dikunjungi
+        const visited = new Set(); //untuk menyimpan node yang sudah dikunjungi agar tidak dikunjungi ulang
+        /*
+        visited = Set(1) {"A"}
+        */
         const queue = []; //Antrian untuk menjaga simpul yang akan diperiksa
+        /*
+        queue = []
+        */
 
-        //menambahkan simpul awal ke antrian dan tKalian sebagai sudah dikunjunngi
+        //menyimpan node yang akan dikunjungi(menggunakan konsep FIFO: first in first out)
         queue.push(this.nodes.get(startValue));
+        /*
+            Node { value: 'A', edges: [] }
+        */
 
-        while (queue.length > 0) {
-            const currentNode = queue.shift();
-            if (currentNode.value === targetValue) return true;
+        while (queue.length > 0) { //jika panjangnya lebih besar dari 0 maka akan loop
+            const currentNode = queue.shift(); //ambil node paling depan dari queue (FIFO)
+            if (currentNode.value === targetValue) return true; //cek apakah simpul saat ini adalah tujuan ? jika iya, pencarian selesai
 
-            visited.add(currentNode);
-            for (const neighbor of currentNode.edges) {
+            visited.add(currentNode); //tandai simpul saat ini sebagai sudah dikunjungi
+            for (const neighbor of currentNode.edges) { //untuk semua tetangga currentNode, jika belum dikunjungi masukkan ke antrian queue
                 if (!visited.has(neighbor)) {
-                    queue.push(neighbor);
+                    queue.push(neighbor); // jika belum dikunjungi maka edges akan di push ke queue agar dilakukan pengecekan
                 }
             }
         }
@@ -154,6 +163,32 @@ class Graph {
             if (this.dfs(neighbor.value, targetValue, visited)) {
                 return true;
             }
+
+            /*
+            dfs('A', 'D')
+                └── dfs('B', 'D')
+                    └── dfs('C', 'D')
+                        └── dfs('D', 'D') → return true
+
+                        1. dfs('A', 'C') dipanggil
+                            - visited: Set {}
+                            - startValue = 'A'
+                            - belum pernah dikunjungi → simpan ke visited → Set { 'A' }
+                            - bukan target (A ≠ C) → ambil edges dari node A → ['B']
+                            - rekursif: dfs('B', 'C') ← DIPANGGIL
+
+                        2. dfs('B', 'C') dipanggil
+                            - visited: Set { 'A' }
+                            - belum pernah dikunjungi → Set { 'A', 'B' }
+                            - bukan target (B ≠ C) → ambil edges dari node B → ['C']
+                            - rekursif: dfs('C', 'C') ← DIPANGGIL
+
+                        3. dfs('C', 'C') dipanggil
+                            - visited: Set { 'A', 'B' }
+                            - belum pernah dikunjungi → Set { 'A', 'B', 'C' }
+                            - target ditemukan (C === C) → return `true` 🚀
+
+            */
         }
         return false;
     }
